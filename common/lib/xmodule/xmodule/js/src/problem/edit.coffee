@@ -53,6 +53,7 @@ class @MarkdownEditingDescriptor extends XModule.Descriptor
       @toggleCheatsheetVisibility()
     if @confirmConversionToXml()
       @createXMLEditor(MarkdownEditingDescriptor.markdownToXml(@markdown_editor.getValue()))
+      @xml_editor.display.wrapper.className += " CodeMirror-advanced";
       # Need to refresh to get line numbers to display properly (and put cursor position to 0)
       @xml_editor.setCursor(0)
       @xml_editor.refresh()
