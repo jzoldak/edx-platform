@@ -57,6 +57,58 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
     };
 
     /**
+     * Adds the Scroller Plugin which scrolls to a note with a certain id and
+     * opens it.
+     **/
+    Annotator.Plugin.Scroller = function (element, options) {
+        // Call the Annotator.Plugin constructor this sets up the element and
+        // options properties.
+        Annotator.Plugin.apply(this, arguments);
+    };
+
+    $.extend(Annotator.Plugin.Scroller.prototype, new Annotator.Plugin(), {
+        events: {},
+        options: {},
+        getIdFromLocationHash: function() {
+            return window.location.hash.substr(1);
+        },
+        pluginInit: function () {
+            // If the page URL contains a hash, we could be coming from a click
+            // on an anchor in the notes page. In that case, the hash is the id
+            // of the note that has to be scrolled to and opened.
+            if (this.getIdFromLocationHash()) {
+                this.annotator.subscribe('annotationsLoaded', _.bind(this.notesLoaded, this));
+            }
+        },
+        destroy: function () {
+            this.annotator.unsubscribe('annotationsLoaded', _.bind(this.notesLoaded, this));
+        },
+        notesLoaded: function (notes) {
+            var highlight, offset, event, hash = this.getIdFromLocationHash();
+
+            _.each(notes, function (note) {
+                if (note.id === hash && note.highlights.length) {
+                    // Clear the page URL hash, it won't be needed once we've
+                    // scrolled and opened the relevant note. And it would
+                    // unnecessarily repeat the steps below if we come from
+                    // another sequential.
+                    window.location.hash = '';
+                    highlight = $(note.highlights[0]);
+                    offset = highlight.offset();
+                    // Scroll to highlight
+                    $('html, body').animate({scrollTop: offset.top}, 'slow');
+                    // Open the note
+                    event = $.Event('click', {
+                        pageX: offset.left,
+                        pageY: offset.top
+                    });
+                    highlight.trigger(event);
+                }
+            });
+        }
+    });
+
+    /**
      * Modifies Annotator.highlightRange to add a "tabindex=0" attribute
      * to the <span class="annotator-hl"> markup that encloses the note.
      * These are then focusable via the TAB key.
