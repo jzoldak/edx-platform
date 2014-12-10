@@ -300,3 +300,20 @@ class TestPartitionService(PartitionTestCase):
         self.user_partition.scheme.current_group = groups[1]    # pylint: disable=no-member
         group2_id = self.partition_service.get_user_group_id_for_partition(user_partition_id)
         self.assertEqual(group2_id, groups[1].id)    # pylint: disable=no-member
+
+    def test_get_user_group(self):
+        """
+        Test that a partition group is assigned to a user.
+        """
+        user = Mock(name='ma')
+        groups = self.user_partition.groups    # pylint: disable=no-member
+
+        # assign first group and verify that it is returned for the user
+        self.user_partition.scheme.current_group = groups[0]    # pylint: disable=no-member
+        group1 = self.partition_service.get_user_group(user, self.user_partition)
+        self.assertEqual(group1, groups[0])    # pylint: disable=no-member
+
+        # switch to the second group and verify that it is returned for the user
+        self.user_partition.scheme.current_group = groups[1]    # pylint: disable=no-member
+        group2 = self.partition_service.get_user_group(user, self.user_partition)
+        self.assertEqual(group2, groups[1])    # pylint: disable=no-member

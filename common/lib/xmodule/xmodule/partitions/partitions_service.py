@@ -79,3 +79,17 @@ class PartitionService(object):
         return user_partition.scheme.get_group_for_user(
             self.runtime.course_id, user, user_partition, track_function=self._track_function
         )
+
+    def get_user_group(self, user, user_partition):
+        """
+        Returns the group from the specified user partition to which the user is assigned.
+        If the user has not yet been assigned, a group will be chosen for them based upon
+        the partition's scheme.
+
+        Args:
+            user (django.contrib.auth.models.User):
+            user_partition (xmodule.partitions.partitions.UserPartition):
+        """
+        return user_partition.scheme.get_group_for_user(
+            self.runtime.course_id, user, user_partition, track_function=self._track_function
+        )

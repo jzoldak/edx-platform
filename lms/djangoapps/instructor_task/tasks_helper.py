@@ -4,7 +4,6 @@ running state of a course.
 
 """
 import json
-import urllib
 from datetime import datetime
 from time import time
 import unicodecsv
@@ -22,16 +21,19 @@ from track.views import task_track
 from util.file import course_filename_prefix_generator, UniversalNewlineIterator
 from xmodule.modulestore.django import modulestore
 
-from openedx.core.djangoapps.course_groups.models import CourseUserGroup
-from openedx.core.djangoapps.course_groups.cohorts import add_user_to_cohort
+from courseware.courses import get_course_by_id
 from courseware.grades import iterate_grades_for
 from courseware.models import StudentModule
 from courseware.model_data import FieldDataCache
-from courseware.module_render import get_module_for_descriptor_internal
+from courseware.module_render import get_module_for_descriptor_internal, LmsModuleSystem
 from instructor_analytics.basic import enrolled_students_features
 from instructor_analytics.csvs import format_dictlist
 from instructor_task.models import ReportStore, InstructorTask, PROGRESS
+from openedx.core.djangoapps.course_groups.cohorts import get_cohort
+from openedx.core.djangoapps.course_groups.models import CourseUserGroup
+from openedx.core.djangoapps.course_groups.cohorts import add_user_to_cohort
 from student.models import CourseEnrollment
+
 
 # define different loggers for use within tasks and on client side
 TASK_LOG = get_task_logger(__name__)
@@ -547,6 +549,19 @@ def upload_grades_csv(_xmodule_instance_args, _entry_id, course_id, _task_input,
     enrolled_students = CourseEnrollment.users_enrolled_in(course_id)
     task_progress = TaskProgress(action_name, enrolled_students.count(), start_time)
 
+    course = get_course_by_id(course_id)
+    cohorts_header = ['Cohort'] if course.is_cohorted else []
+
+    # We need this for PartitionService only
+    system = LmsModuleSystem(
+        course_id=course_id, static_url=None, track_function=None,
+        get_module=None, render_template=None, replace_urls=None, descriptor_runtime=None,
+    )
+
+    partition_service = system._services['partitions']  # pylint: disable=protected-access
+    partitions = partition_service.course_partitions
+    group_configs_header = [partition.name for partition in partitions]
+
     # Loop over all our students and build our CSV lists in memory
     header = None
     rows = []
@@ -564,13 +579,21 @@ def upload_grades_csv(_xmodule_instance_args, _entry_id, course_id, _task_input,
             if not header:
                 # Encode the header row in utf-8 encoding in case there are unicode characters
                 header = [section['label'].encode('utf-8') for section in gradeset[u'section_breakdown']]
-                rows.append(["id", "email", "username", "grade"] + header)
+                rows.append(
+                    ["id", "email", "username", "grade"] + header + cohorts_header + group_configs_header
+                )
 
             percents = {
                 section['label']: section.get('percent', 0.0)
                 for section in gradeset[u'section_breakdown']
                 if 'label' in section
             }
+
+            cohorts_group_name = [get_cohort(student, course_id).name] if course.is_cohorted else []
+
+            group_configs_group_names = [
+                partition_service.get_user_group(student, partition).name for partition in partitions
+            ]
 
             # Not everybody has the same gradable items. If the item is not
             # found in the user's gradeset, just assume it's a 0. The aggregated
@@ -579,7 +602,10 @@ def upload_grades_csv(_xmodule_instance_args, _entry_id, course_id, _task_input,
             # possible for a student to have a 0.0 show up in their row but
             # still have 100% for the course.
             row_percents = [percents.get(label, 0.0) for label in header]
-            rows.append([student.id, student.email, student.username, gradeset['percent']] + row_percents)
+            rows.append(
+                [student.id, student.email, student.username, gradeset['percent']] +
+                row_percents + cohorts_group_name + group_configs_group_names
+            )
         else:
             # An empty gradeset means we failed to grade a student.
             task_progress.failed += 1

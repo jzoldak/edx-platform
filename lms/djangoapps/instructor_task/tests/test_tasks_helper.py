@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Unit tests for LMS instructor-initiated background tasks helper functions.
 
@@ -7,8 +9,12 @@ Tests that CSV grade report generation works with unicode emails.
 import ddt
 from mock import Mock, patch
 import tempfile
+import unicodecsv
 
 from xmodule.modulestore.tests.factories import CourseFactory
+from student.tests.factories import UserFactory
+from student.models import CourseEnrollment
+from xmodule.partitions.partitions import Group, UserPartition
 
 from openedx.core.djangoapps.course_groups.tests.helpers import CohortFactory
 from instructor_task.models import ReportStore
@@ -56,6 +62,64 @@ class TestInstructorGradeReport(TestReportMixin, InstructorTaskCourseTestCase):
 
         report_store = ReportStore.from_config()
         self.assertTrue(any('grade_report_err' in item[0] for item in report_store.links_for(self.course.id)))
+
+    def _verify_cohort_data(self, cohort_groups):
+        """
+        Verify cohort data.
+        """
+        course = CourseFactory.create(cohort_config={'cohorted': True, 'auto_cohort': True,
+                                                     'auto_cohort_groups': cohort_groups})
+        cohorted_students = [UserFactory.create() for _ in xrange(2)]
+        for student in cohorted_students:
+            CourseEnrollment.enroll(student, course.id)
+
+        with patch('instructor_task.tasks_helper._get_current_task'):
+            result = upload_grades_csv(None, None, course.id, None, 'graded')
+            self.assertDictContainsSubset({'attempted': 2, 'succeeded': 2, 'failed': 0}, result)
+            report_store = ReportStore.from_config()
+            report_csv_filename = report_store.links_for(course.id)[0][0]
+            with open(report_store.path_to(course.id, report_csv_filename)) as csv_file:
+                for row in unicodecsv.DictReader(csv_file):
+                    self.assertIn(row['Cohort'], cohort_groups)
+
+    def test_cohort_data_in_grading(self):
+        """
+        Test that cohort data is included in grades csv if cohort configuration is enabled for course.
+        """
+        cohort_groups = ['cohort 1', 'cohort 2']
+        self._verify_cohort_data(cohort_groups)
+
+    def test_unicode_cohort_data_in_grading(self):
+        """
+        Test that cohort groups can contain unicode characters.
+        """
+        cohort_groups = [u'cohort 1\xec', u'cohort 2\xec\xec']
+        self._verify_cohort_data(cohort_groups)
+
+    def test_unicode_user_partitions(self):
+        """
+        Test that user partition groups can contain unicode characters.
+        """
+        user_groups = [u'ÞrÖfessÖr X', u'MàgnëtÖ']
+        user_partition = UserPartition(
+            0,
+            'x_man',
+            'X Man',
+            [
+                Group(0, user_groups[0]),
+                Group(1, user_groups[1])
+            ]
+        )
+
+        # Create course with group configurations
+        self.initialize_course(
+            course_factory_kwargs={
+                'user_partitions': [user_partition]
+            }
+        )
+
+        _groups = [group.name for group in self.course.user_partitions[0].groups]
+        self.assertEqual(_groups, user_groups)
 
 
 @ddt.ddt
