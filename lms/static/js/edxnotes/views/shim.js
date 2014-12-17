@@ -67,11 +67,10 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
     };
 
     $.extend(Annotator.Plugin.Scroller.prototype, new Annotator.Plugin(), {
-        events: {},
-        options: {},
         getIdFromLocationHash: function() {
             return window.location.hash.substr(1);
         },
+
         pluginInit: function () {
             // If the page URL contains a hash, we could be coming from a click
             // on an anchor in the notes page. In that case, the hash is the id
@@ -80,9 +79,11 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
                 this.annotator.subscribe('annotationsLoaded', _.bind(this.notesLoaded, this));
             }
         },
+
         destroy: function () {
             this.annotator.unsubscribe('annotationsLoaded', _.bind(this.notesLoaded, this));
         },
+
         notesLoaded: function (notes) {
             var highlight, offset, event, hash = this.getIdFromLocationHash();
 

@@ -17,7 +17,7 @@
         <% } else if (model.get('quote')) { %>
             <dt class="edx-notes-item-highlight-title"><%- gettext("Noted in:") %></dt>
         <% } %>
-            <dd><a class="edx-notes-item-unit-link" href="<%= model.get('unit').url %>#<%- model.get('id') %>" title="<%- gettext('Visit the unit.') %>"><%- model.get('unit').display_name %></a></dd>
+            <dd><a class="edx-notes-item-unit-link" href="<%= model.get('unit').url %>#<%= model.get('id') %>" title="<%- gettext('Visit the unit.') %>"><%- model.get('unit').display_name %></a></dd>
         <% if (model.get('updated')) { %>
             <dt class="edx-notes-item-last-edited-title"><%- gettext("Last Edited:") %></dt>
             <dd class="edx-notes-item-last-edited-value"><%- model.get('updated') %></dd>

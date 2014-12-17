@@ -422,9 +422,9 @@ class EdxNotesPageTest(EdxNotesTestMixin):
         When I open Notes page
         And I click on the first unit link
         Then I see the note opened on the unit page
-        When I switch to the first sequential
+        When I switch to the second sequential
         I do not see any note opened
-        When I switch back to second sequential
+        When I switch back to first sequential
         I do not see any note opened
         """
         xblocks = self.course_fixture.get_nested_xblocks(category="html")
