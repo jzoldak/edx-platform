@@ -22,9 +22,10 @@ class CourseMasquerade(object):
     """
     Masquerade settings for a particular course.
     """
-    def __init__(self, course_key, role='student', group_id=None):
+    def __init__(self, course_key, role='student', user_partition_id=None, group_id=None):
         self.course_key = course_key
         self.role = role
+        self.user_partition_id = user_partition_id
         self.group_id = group_id
 
 
@@ -39,8 +40,14 @@ def handle_ajax(request, course_key_string):
     masquerade_settings = request.session.get(MASQUERADE_SETTINGS_KEY, {})
     request_json = request.json
     role = request_json.get('role', 'student')
+    user_partition_id = request_json.get('user_partition_id', None)
     group_id = request_json.get('group_id', None)
-    masquerade_settings[course_key] = CourseMasquerade(course_key, role=role, group_id=group_id)
+    masquerade_settings[course_key] = CourseMasquerade(
+        course_key,
+        role=role,
+        user_partition_id=user_partition_id,
+        group_id=group_id
+    )
     request.session[MASQUERADE_SETTINGS_KEY] = masquerade_settings
     return JsonResponse()
 
@@ -97,8 +104,11 @@ def is_masquerading_as_student(user, course_key):
 
 def get_masquerading_group_id(user, course_key):
     """
-    Returns the id of the user partition group that the user is currently masquerading as,
-    or None if none.
+    If the user is masquerading as belonging to a group, then this method returns
+    two values: the id of the group, and the id of the user partition that the group
+    belongs to. If the user is not masquerading as a group, then None is returned.
     """
     course_masquerade = get_course_masquerade(user, course_key)
-    return course_masquerade.group_id if course_masquerade else None
+    if not course_masquerade:
+        return None, None
+    return course_masquerade.group_id, course_masquerade.user_partition_id

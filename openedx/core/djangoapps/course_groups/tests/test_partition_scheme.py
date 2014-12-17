@@ -8,6 +8,8 @@ import django.test
 from django.test.utils import override_settings
 from mock import patch
 
+from courseware.masquerade import handle_ajax, setup_masquerade
+from courseware.tests.test_masquerade import StaffMasqueradeTestCase
 from student.tests.factories import UserFactory
 from xmodule.partitions.partitions import Group, UserPartition, UserPartitionError
 from xmodule.modulestore.django import modulestore, clear_existing_modulestores
@@ -336,3 +338,35 @@ class TestGetCohortedUserPartition(django.test.TestCase):
         """
         self.course.user_partitions.append(self.random_user_partition)
         self.assertIsNone(get_cohorted_user_partition(self.course_key))
+
+
+class TestMasqueradedGroup(StaffMasqueradeTestCase):
+    """
+    Check for staff being able to masquerade as belonging to a group.
+    """
+    def setUp(self):
+        super(TestMasqueradedGroup, self).setUp()
+        self.user_partition = UserPartition(
+            0, 'Test User Partition', '',
+            [Group(0, 'Group 1'), Group(1, 'Group 2')],
+            scheme_id='cohort'
+        )
+        self.course.user_partitions.append(self.user_partition)
+        modulestore().update_item(self.course, self.test_user.id)
+
+    @patch.dict('django.conf.settings.FEATURES', {'DISABLE_START_DATES': False})
+    def test_group_masquerade(self):
+        """
+        Tests that a staff member can masquerade as being in a particular group.
+        """
+        request = self._create_mock_json_request(
+            self.test_user,
+            body='{"role": "student", "user_partition_id": 0, "group_id": 1}'
+        )
+        handle_ajax(request, unicode(self.course.id))
+        setup_masquerade(request, self.test_user, True)
+        scheme = self.user_partition.scheme    # pylint: disable=no-member
+        self.assertEqual(
+            scheme.get_group_for_user(self.course.id, self.test_user, self.user_partition),
+            self.user_partition.groups[1]    # pylint: disable=no-member
+        )

@@ -36,11 +36,15 @@ class CohortPartitionScheme(object):
         If the user has no cohort mapping, or there is no (valid) cohort ->
         partition group mapping found, the function returns None.
         """
-        # If the current user is masquerading as being in a group, then return it
-        group_id = get_masquerading_group_id(user, course_key)
-        if group_id is not None:
-            user_partition = get_cohorted_user_partition(course_key)
-            return user_partition.get_group(group_id) if user_partition else None
+        # If the current user is masquerading as being in a group belonging to the
+        # specified user partition then return the masquerading group.
+        group_id, user_partition_id = get_masquerading_group_id(user, course_key)
+        if group_id and user_partition_id == user_partition.id:
+            try:
+                return user_partition.get_group(group_id)
+            except NoSuchUserPartitionGroupError:
+                # If the group no longer exists then the masquerade is not in effect
+                pass
 
         cohort = get_cohort(user, course_key)
         if cohort is None:

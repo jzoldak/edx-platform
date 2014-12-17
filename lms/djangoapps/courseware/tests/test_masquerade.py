@@ -10,7 +10,7 @@ from django.test.utils import override_settings
 from django.utils.timezone import UTC
 
 from capa.tests.response_xml_factory import OptionResponseXMLFactory
-from courseware.masquerade import handle_ajax, setup_masquerade
+from courseware.masquerade import handle_ajax, setup_masquerade, get_masquerading_group_id
 from courseware.tests.factories import StaffFactory
 from courseware.tests.helpers import LoginEnrollmentTestCase, get_request_for_user
 from student.tests.factories import UserFactory
@@ -77,6 +77,17 @@ class MasqueradeTestCase(ModuleStoreTestCase, LoginEnrollmentTestCase):
             }
         )
         return self.client.get(url)
+
+    def _create_mock_json_request(self, user, body):
+        """
+        Returns a mock JSON request for the specified user
+        """
+        request = get_request_for_user(user)
+        request.method = 'POST'
+        request.META = {'CONTENT_TYPE': ['application/json']}
+        request.body = body
+        request.session = {}
+        return request
 
     def verify_staff_debug_present(self, staff_debug_expected):
         """
@@ -164,25 +175,6 @@ class StaffMasqueradeTestCase(MasqueradeTestCase):
         return response
 
 
-class NormalStaffVisibilityTest(StaffMasqueradeTestCase):
-    """
-    Verify the course displays as expected for a staff member.
-    """
-    @patch.dict('django.conf.settings.FEATURES', {'DISABLE_START_DATES': False})
-    def test_staff_debug_visible(self):
-        """
-        Tests that staff debug control is not present for a student.
-        """
-        self.verify_staff_debug_present(True)
-
-    @patch.dict('django.conf.settings.FEATURES', {'DISABLE_START_DATES': False})
-    def test_show_answer_visible(self):
-        """
-        Tests that "Show Answer" is not visible for a student.
-        """
-        self.verify_show_answer_present(True)
-
-
 class TestStaffMasqueradeAsStudent(StaffMasqueradeTestCase):
     """
     Check for staff being able to masquerade as student.
@@ -220,12 +212,12 @@ class TestStaffMasqueradeAsStudent(StaffMasqueradeTestCase):
         self.verify_show_answer_present(True)
 
 
-class TestMasqueradeAsHavingGroup(StaffMasqueradeTestCase):
+class TestGetMasqueradingGroupId(StaffMasqueradeTestCase):
     """
     Check for staff being able to masquerade as belonging to a group.
     """
     def setUp(self):
-        super(TestMasqueradeAsHavingGroup, self).setUp()
+        super(TestGetMasqueradingGroupId, self).setUp()
         self.user_partition = UserPartition(
             0, 'Test User Partition', '',
             [Group(0, 'Group 1'), Group(1, 'Group 2')],
@@ -234,30 +226,25 @@ class TestMasqueradeAsHavingGroup(StaffMasqueradeTestCase):
         self.course.user_partitions.append(self.user_partition)
         modulestore().update_item(self.course, self.test_user.id)
 
-    def _create_mock_json_request(self, user, body):
-        """
-        Returns a mock JSON request for the specified user
-        """
-        request = get_request_for_user(user)
-        request.method = 'POST'
-        request.META = {'CONTENT_TYPE': ['application/json']}
-        request.body = body
-        request.session = {}
-        return request
-
     @patch.dict('django.conf.settings.FEATURES', {'DISABLE_START_DATES': False})
     def test_group_masquerade(self):
         """
         Tests that a staff member can masquerade as being in a particular group.
         """
+        # Verify that there is no masquerading group initially
+        group_id, user_partition_id = get_masquerading_group_id(self.test_user, self.course.id)
+        self.assertIsNone(group_id)
+        self.assertIsNone(user_partition_id)
+
+        # Install a masquerading group
         request = self._create_mock_json_request(
             self.test_user,
-            body='{"role": "student", "group_id": 1}'
+            body='{"role": "student", "user_partition_id": 0, "group_id": 1}'
         )
         handle_ajax(request, unicode(self.course.id))
         setup_masquerade(request, self.test_user, True)
-        scheme = self.user_partition.scheme    # pylint: disable=no-member
-        self.assertEqual(
-            scheme.get_group_for_user(self.course.id, self.test_user, self.user_partition),
-            self.user_partition.groups[1]    # pylint: disable=no-member
-        )
+
+        # Verify that the masquerading group is returned
+        group_id, user_partition_id = get_masquerading_group_id(self.test_user, self.course.id)
+        self.assertEqual(group_id, 1)
+        self.assertEqual(user_partition_id, 0)

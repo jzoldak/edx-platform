@@ -100,6 +100,7 @@ def url_class(is_active):
         selectedOption = element.find('option:selected');
         data = {
             role: selectedOption.val() === 'staff' ? 'staff' : 'student',
+            user_partition_id: ${cohorted_user_partition.id},
             group_id: selectedOption.data('group-id')
         };
         $.ajax({
