@@ -15,6 +15,8 @@ from opaque_keys.edx.keys import CourseKey
 
 log = logging.getLogger(__name__)
 
+# The key used to store a user's course-level masquerade information in the Django session.
+# The value is a dict from course keys to CourseMasquerade objects.
 MASQUERADE_SETTINGS_KEY = 'masquerade_settings'
 
 
@@ -35,6 +37,8 @@ class CourseMasquerade(object):
 def handle_ajax(request, course_key_string):
     """
     Handle AJAX posts to update the current user's masquerade for the specified course.
+    The masquerade settings are stored in the Django session as a dict from course keys
+    to CourseMasquerade objects.
     """
     course_key = CourseKey.from_string(course_key_string)
     masquerade_settings = request.session.get(MASQUERADE_SETTINGS_KEY, {})
@@ -54,7 +58,7 @@ def handle_ajax(request, course_key_string):
 
 def setup_masquerade(request, course_key, staff_access=False):
     """
-    Setup masquerade identity (allows staff to view courseware as either staff or student)
+    Sets up masquerading for the current user within the current request. The
 
     Uses request.session[MASQUERADE_SETTINGS_KEY] to store status of masquerading.
     Adds masquerade status to request.user, if masquerading active.

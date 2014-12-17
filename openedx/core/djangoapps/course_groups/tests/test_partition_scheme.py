@@ -352,21 +352,37 @@ class TestMasqueradedGroup(StaffMasqueradeTestCase):
             scheme_id='cohort'
         )
         self.course.user_partitions.append(self.user_partition)
+        self.session = {}
         modulestore().update_item(self.course, self.test_user.id)
+
+    def _verify_masquerade_for_group_id(self, group, user_partition):
+        """
+        Verify that the masquerade works for the specified group id.
+        """
+        # Send the request to set the masquerade
+        if group and user_partition:
+            body = '{"role": "student", "user_partition_id": {user_partition_id}, "group_id": {group_id}}'.format(
+                user_partition_id=user_partition.id, group_id=group.id
+            )
+        else:
+            body = '{"role": "student"}'
+        request = self._create_mock_json_request(self.test_user, body=body, session=self.session)
+        handle_ajax(request, unicode(self.course.id))
+
+        # Now setup the masquerade for the test user
+        setup_masquerade(request, self.test_user, True)
+        scheme = user_partition.scheme    # pylint: disable=no-member
+        self.assertEqual(
+            scheme.get_group_for_user(self.course.id, self.test_user, user_partition),
+            group
+        )
 
     @patch.dict('django.conf.settings.FEATURES', {'DISABLE_START_DATES': False})
     def test_group_masquerade(self):
         """
         Tests that a staff member can masquerade as being in a particular group.
         """
-        request = self._create_mock_json_request(
-            self.test_user,
-            body='{"role": "student", "user_partition_id": 0, "group_id": 1}'
-        )
-        handle_ajax(request, unicode(self.course.id))
-        setup_masquerade(request, self.test_user, True)
-        scheme = self.user_partition.scheme    # pylint: disable=no-member
-        self.assertEqual(
-            scheme.get_group_for_user(self.course.id, self.test_user, self.user_partition),
-            self.user_partition.groups[1]    # pylint: disable=no-member
-        )
+        self._verify_masquerade_for_group_id(self.user_partition.groups[0], self.user_partition)
+        self._verify_masquerade_for_group_id(self.user_partition.groups[1], self.user_partition)
+        self._verify_masquerade_for_group_id(None, None)
+

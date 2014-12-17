@@ -66,7 +66,7 @@ class MasqueradeTestCase(ModuleStoreTestCase, LoginEnrollmentTestCase):
 
     def get_courseware_page(self):
         """
-        Returns the HTML rendering for the courseware page.
+        Returns the server response for the courseware page.
         """
         url = reverse(
             'courseware_section',
@@ -78,15 +78,15 @@ class MasqueradeTestCase(ModuleStoreTestCase, LoginEnrollmentTestCase):
         )
         return self.client.get(url)
 
-    def _create_mock_json_request(self, user, body):
+    def _create_mock_json_request(self, user, body, method='POST', session={}):
         """
         Returns a mock JSON request for the specified user
         """
         request = get_request_for_user(user)
-        request.method = 'POST'
+        request.method = method
         request.META = {'CONTENT_TYPE': ['application/json']}
         request.body = body
-        request.session = {}
+        request.session = session
         return request
 
     def verify_staff_debug_present(self, staff_debug_expected):
