@@ -62,6 +62,7 @@ Write a persuasive essay to a newspaper reflecting your views on censorship in l
       $(@element.find('.xml-box')).hide()
     else
       @createXMLEditor()
+      @xml_editor.display.wrapper.className += " CodeMirror-advanced";
 
     @alertTaskRubricModification()
 
