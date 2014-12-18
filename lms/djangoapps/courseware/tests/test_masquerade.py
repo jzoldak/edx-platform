@@ -78,7 +78,7 @@ class MasqueradeTestCase(ModuleStoreTestCase, LoginEnrollmentTestCase):
         )
         return self.client.get(url)
 
-    def _create_mock_json_request(self, user, body, method='POST', session={}):
+    def _create_mock_json_request(self, user, body, method='POST', session=None):
         """
         Returns a mock JSON request for the specified user
         """
@@ -86,7 +86,7 @@ class MasqueradeTestCase(ModuleStoreTestCase, LoginEnrollmentTestCase):
         request.method = method
         request.META = {'CONTENT_TYPE': ['application/json']}
         request.body = body
-        request.session = session
+        request.session = session or {}
         return request
 
     def verify_staff_debug_present(self, staff_debug_expected):
