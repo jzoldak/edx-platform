@@ -3,6 +3,7 @@ Test the partitions and partitions service
 
 """
 
+import json
 from django.conf import settings
 import django.test
 from django.test.utils import override_settings
@@ -355,25 +356,29 @@ class TestMasqueradedGroup(StaffMasqueradeTestCase):
         self.session = {}
         modulestore().update_item(self.course, self.test_user.id)
 
-    def _verify_masquerade_for_group_id(self, group, user_partition):
+    def _verify_masquerade_for_group_id(self, group):
         """
         Verify that the masquerade works for the specified group id.
         """
         # Send the request to set the masquerade
-        if group and user_partition:
-            body = '{"role": "student", "user_partition_id": {user_partition_id}, "group_id": {group_id}}'.format(
-                user_partition_id=user_partition.id, group_id=group.id
-            )
-        else:
-            body = '{"role": "student"}'
-        request = self._create_mock_json_request(self.test_user, body=body, session=self.session)
+        request_json = {
+            "role": "student",
+        }
+        if group and self.user_partition:
+            request_json['user_partition_id'] = self.user_partition.id
+            request_json['group_id'] = group.id
+        request = self._create_mock_json_request(
+            self.test_user,
+            body=json.dumps(request_json),
+            session=self.session
+        )
         handle_ajax(request, unicode(self.course.id))
 
         # Now setup the masquerade for the test user
         setup_masquerade(request, self.test_user, True)
-        scheme = user_partition.scheme    # pylint: disable=no-member
+        scheme = self.user_partition.scheme    # pylint: disable=no-member
         self.assertEqual(
-            scheme.get_group_for_user(self.course.id, self.test_user, user_partition),
+            scheme.get_group_for_user(self.course.id, self.test_user, self.user_partition),
             group
         )
 
@@ -382,7 +387,7 @@ class TestMasqueradedGroup(StaffMasqueradeTestCase):
         """
         Tests that a staff member can masquerade as being in a particular group.
         """
-        self._verify_masquerade_for_group_id(self.user_partition.groups[0], self.user_partition)
-        self._verify_masquerade_for_group_id(self.user_partition.groups[1], self.user_partition)
-        self._verify_masquerade_for_group_id(None, None)
+        self._verify_masquerade_for_group_id(self.user_partition.groups[0])
+        self._verify_masquerade_for_group_id(self.user_partition.groups[1])
+        self._verify_masquerade_for_group_id(None)
 
