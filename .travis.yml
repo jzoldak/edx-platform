@@ -8,12 +8,12 @@ env:
   matrix:
     # These work. Disable while getting the rest of the commands to work also.
     # - PAVER_CMD="test_lib"
-    # - PAVER_CMD="test_system -s cms --fasttest"
+    - PAVER_CMD="test_system -s cms --fasttest"
     # - PAVER_CMD="test_js"
 
     # Still working on these.
-    - PAVER_CMD="test_acceptance -s lms"
-    - PAVER_CMD="test_acceptance -s cms"
+    # - PAVER_CMD="test_acceptance -s lms"
+    # - PAVER_CMD="test_acceptance -s cms"
     # - PAVER_CMD="test_system -s lms --fasttest"  # Issues with the bulk email xml to plaintext via lynx process
     # - PAVER_CMD='test_bokchoy --skip_firefox_version_validation --extra_args=\"-a shard_1\"'
 
