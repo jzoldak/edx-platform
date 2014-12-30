@@ -8,7 +8,7 @@ Shapely==1.2.16
 unittest2>=0.8.0
 
 # Install pip-accel itself (using pip)
-pip-accel==0.21.1
+pip-accel==0.22
 
 # pip-accel only makes the s3 functionality available if boto is installed
 boto==2.34.0
