@@ -33,10 +33,11 @@ python:
 # Cannot use travis dependency caching except in their container infrastructure,
 # but there you cannot use sudo to install packages. Otherwise we would do
 # something like this...
-# cache:
-#   directories:
-#     - $HOME/.pip/download-cache
-#     - $HOME/.pip-accel
+cache:
+  apt: true
+  directories:
+  - $HOME/.pip/download-cache
+  - $HOME/.pip-accel
 
 services:
   - mongodb
