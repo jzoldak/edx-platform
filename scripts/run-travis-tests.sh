@@ -42,45 +42,51 @@ case "${TEST_SUITE}" in
         paver test_acceptance -s lms
         ;;
 
-    "bok-1")
+    "bok-failing") # these all fail
+        paver test_bokchoy --skip_firefox_version_validation -t discussion/test_cohort_management.py
+        paver test_bokchoy --skip_firefox_version_validation -t lms/test_lms.py
+        paver test_bokchoy --skip_firefox_version_validation --fasttest -t studio/test_studio_container.py
+        paver test_bokchoy --skip_firefox_version_validation --fasttest -t video/test_video_module.py
+        paver test_bokchoy --skip_firefox_version_validation --fasttest -t studio/test_studio_outline.py
+        paver test_bokchoy --skip_firefox_version_validation -t discussion/test_discussion.py  # DiscussionUserProfileTest only fails
+        paver test_bokchoy --skip_firefox_version_validation --fasttest -t lms/test_lms_courseware.py
+        paver test_bokchoy --skip_firefox_version_validation -t lms/test_lms_instructor_dashboard.py  # errors: AutoEnrollmentWithCSVTest and AutoEnrollmentWithCSVTest
+        ;;
+
+    "bok-passing") # these all pass
         paver test_bokchoy --skip_firefox_version_validation -t test_annotatable.py
         paver test_bokchoy --skip_firefox_version_validation --fasttest -t test_ora.py
-        ;;
-
-    "bok-2")
-        paver test_bokchoy --skip_firefox_version_validation -t discussion/test_cohort_management.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t discussion/test_cohorts.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t discussion/test_discussion.py
-        ;;
-
-    "bok-3")
-        paver test_bokchoy --skip_firefox_version_validation -t lms/test_lms.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t lms/test_lms_acid_xblock.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t lms/test_lms_courseware.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t lms/test_lms_instructor_dashboard.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t lms/test_lms_matlab_problem.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t lms/test_lms_staff_view.py
-        ;;
-
-    "bok-4")
         paver test_bokchoy --skip_firefox_version_validation -t studio/test_studio_acid_xblock.py
         paver test_bokchoy --skip_firefox_version_validation --fasttest -t studio/test_studio_bad_data.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t studio/test_studio_container.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t studio/test_studio_general.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t studio/test_studio_outline.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t studio/test_studio_rerun.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t studio/test_studio_settings.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t studio/test_studio_split_test.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t studio/test_studio_with_ora_component.py
-        ;;
-
-    "bok-5")
         paver test_bokchoy --skip_firefox_version_validation -t video/test_studio_video_editor.py
         paver test_bokchoy --skip_firefox_version_validation --fasttest -t video/test_studio_video_module.py
         paver test_bokchoy --skip_firefox_version_validation --fasttest -t video/test_studio_video_transcript.py
         paver test_bokchoy --skip_firefox_version_validation --fasttest -t video/test_video_handout.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t video/test_video_module.py
-        paver test_bokchoy --skip_firefox_version_validation --fasttest -t video/test_video_times.py
+        paver test_bokchoy --skip_firefox_version_validation -t studio/test_studio_settings.py
+        paver test_bokchoy --skip_firefox_version_validation --fasttest -t studio/test_studio_split_test.py
+        paver test_bokchoy --skip_firefox_version_validation --fasttest -t studio/test_studio_with_ora_component.py
+        paver test_bokchoy --skip_firefox_version_validation -t studio/test_studio_general.py
+        paver test_bokchoy --skip_firefox_version_validation -t video/test_video_times.py
+        paver test_bokchoy --skip_firefox_version_validation -t discussion/test_cohorts.py
+        paver test_bokchoy --skip_firefox_version_validation -t studio/test_studio_rerun.py
+        paver test_bokchoy --skip_firefox_version_validation -t lms/test_lms_acid_xblock.py
+        ;;
+
+    "bok-1")
+        ;;
+
+    "bok-2")
+        ;;
+
+    "bok-3")
+        ;;
+
+    "bok-4")
+        paver test_bokchoy --skip_firefox_version_validation -t lms/test_lms_matlab_problem.py
+        ;;
+
+    "bok-5")
+        paver test_bokchoy --skip_firefox_version_validation -t lms/test_lms_staff_view.py
         ;;
 
     "bok-shard1")
