@@ -55,7 +55,10 @@ set -e
 # Clean up previous builds
 git clean -qxfd
 
-source scripts/jenkins-common.sh
+if [ -z $CIRCLECI ]
+    then
+        source scripts/jenkins-common.sh
+fi
 
 # Violations thresholds for failing the build
 PYLINT_THRESHOLD=6600
@@ -68,6 +71,13 @@ JSHINT_THRESHOLD=3700
 # or else no tests will be executed.
 SHARD=${SHARD:="all"}
 
+case $CIRCLE_NODE_INDEX in
+    0) TEST_SUITE="quality" ;;
+    1) TEST_SUITE="lms-unit" ;;
+    2) TEST_SUITE="cms-unit" ;;
+    3) TEST_SUITE="commonlib-unit" ;;
+esac
+
 case "$TEST_SUITE" in
 
     "quality")
@@ -76,7 +86,7 @@ case "$TEST_SUITE" in
         echo "Finding pep8 violations and storing report..."
         paver run_pep8 > pep8.log || { cat pep8.log; EXIT=1; }
         echo "Finding pylint violations and storing in report..."
-        paver run_pylint -l $PYLINT_THRESHOLD > pylint.log || { cat pylint.log; EXIT=1; }
+        paver run_pylint -l $PYLINT_THRESHOLD | tee pylint.log || { cat pylint.log; EXIT=1; }
         # Run quality task. Pass in the 'fail-under' percentage to diff-quality
         paver run_quality -p 100
 
