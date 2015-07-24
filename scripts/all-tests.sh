@@ -72,13 +72,17 @@ JSHINT_THRESHOLD=3700
 SHARD=${SHARD:="all"}
 
 case $CIRCLE_NODE_INDEX in
-    0) TEST_SUITE="quality" ;;
-    1) TEST_SUITE="lms-unit" ;;
-    2) TEST_SUITE="cms-unit" ;;
-    3) TEST_SUITE="commonlib-unit" ;;
+    # 0) TEST_SUITE="quality" ;;
+    # 1) TEST_SUITE="lms-unit" ;;
+    # 2) TEST_SUITE="cms-unit" ;;
+    # 3) TEST_SUITE="commonlib-unit" ;;
+    *) TEST_SUITE="noop" ;;
 esac
 
 case "$TEST_SUITE" in
+    "noop")
+        exit $EXIT
+        ;;
 
     "quality")
         echo "Finding fixme's and storing report..."
