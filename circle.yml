@@ -41,7 +41,9 @@ test:
 
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit
-    - cp -r reports/. $CIRCLE_TEST_REPORTS/junit:
+    # Copy the junit results up to be consumed by circleci, but only do this if
+    # there actually are results. Otherwise this will report as a failure.
+    - "if [ $(find /tmp/empty -type f | wc -l) -eq 0 ] ; cp -r reports/. $CIRCLE_TEST_REPORTS/junit ; fi":
         parallel: true
 
     # Configure your COVERALLS_REPO_TOKEN as an
