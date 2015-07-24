@@ -72,13 +72,21 @@ JSHINT_THRESHOLD=3700
 SHARD=${SHARD:="all"}
 
 case $CIRCLE_NODE_INDEX in
-    0) TEST_SUITE="quality" ;;
-    1) TEST_SUITE="lms-unit" ;;
-    2) TEST_SUITE="cms-unit" ;;
-    3) TEST_SUITE="commonlib-unit" ;;
+    0) TEST_SUITE="noop" ;;
+    1) TEST_SUITE="noop" ;;
+    2) TEST_SUITE="test" ;;
+    3) TEST_SUITE="noop" ;;
 esac
 
 case "$TEST_SUITE" in
+
+    "noop")
+        exit 0
+        ;;
+
+    "test")
+        paver test_system -t cms/djangoapps/contentstore/management/commands/tests/test_reindex_library.py:TestReindexLibrary.test_given_all_key_prompts_and_reindexes_all_libraries
+        ;;
 
     "quality")
         echo "Finding fixme's and storing report..."
