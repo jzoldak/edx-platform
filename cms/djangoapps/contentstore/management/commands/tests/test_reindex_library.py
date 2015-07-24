@@ -45,10 +45,10 @@ class TestReindexLibrary(ModuleStoreTestCase):
         super(TestReindexLibrary, self).setUp()
         self.store = modulestore()
         self.first_lib = LibraryFactory.create(
-            org="test", library="lib1", display_name="run1", default_store=ModuleStoreEnum.Type.split
+            org=u"test", library=u"lib1", display_name="run1", default_store=ModuleStoreEnum.Type.split
         )
         self.second_lib = LibraryFactory.create(
-            org="test", library="lib2", display_name="run2", default_store=ModuleStoreEnum.Type.split
+            org=u"test", library=u"lib2", display_name="run2", default_store=ModuleStoreEnum.Type.split
         )
 
         self.first_course = CourseFactory.create(
