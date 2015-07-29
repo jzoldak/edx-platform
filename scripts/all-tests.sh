@@ -16,7 +16,7 @@ export JSHINT_THRESHOLD=3700
 
 doCheckVars() {
     if [ -n "$CIRCLECI" ] ; then
-        SCRIPT_TO_RUN=scripts/circle.sh
+        SCRIPT_TO_RUN=scripts/circle-ci-tests.sh
 
     elif [ -n "$JENKINS_HOME" ] ; then
         source scripts/jenkins-common.sh
