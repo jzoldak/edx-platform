@@ -3,12 +3,12 @@ set -e
 
 ###############################################################################
 #
-#   circle.sh
+#   circle-ci-tests.sh
 #
 #   Execute tests for edx-platform on circleci.com
 #
-#	Forks should configure parallelism, and use this script
-# 	to define which tests to run in each of the containers.
+#   Forks should configure parallelism, and use this script
+#   to define which tests to run in each of the containers.
 #
 ###############################################################################
 
@@ -38,14 +38,15 @@ case $CIRCLE_NODE_INDEX in
         ;;
 
     2)  # run all of the cms unit tests
-		paver test_system -s cms --extra_args="--with-flaky" --cov_args="-p"
-		;;
+        paver test_system -s cms --extra_args="--with-flaky" --cov_args="-p"
+        ;;
 
     3)  # run the commonlib unit tests
-		paver test_lib --extra_args="--with-flaky" --cov_args="-p"
-		;;
+        paver test_lib --extra_args="--with-flaky" --cov_args="-p"
+        ;;
 
     *)  # catch-all (no-op)
-		paver --help
-		;;
+        echo "No tests were executed in this container."
+        echo "Please adjust scripts/circle-ci-tests.sh to match your parallelism."
+        ;;
 esac
