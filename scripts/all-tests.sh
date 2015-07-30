@@ -30,6 +30,7 @@ doCheckVars
 # Run appropriate CI system script
 if [ -n "$SCRIPT_TO_RUN" ] ; then
     $SCRIPT_TO_RUN
+    exit $!
 else
     echo "ERROR. Could not detect continuous integration system."
     exit 1

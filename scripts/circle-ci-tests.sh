@@ -33,20 +33,21 @@ case $CIRCLE_NODE_INDEX in
         exit $EXIT
         ;;
 
-    1)  # run all of the lms unit tests
+    19)  # run all of the lms unit tests
         paver test_system -s lms --extra_args="--with-flaky" --cov_args="-p"
         ;;
 
-    2)  # run all of the cms unit tests
+    29)  # run all of the cms unit tests
         paver test_system -s cms --extra_args="--with-flaky" --cov_args="-p"
         ;;
 
-    3)  # run the commonlib unit tests
+    39)  # run the commonlib unit tests
         paver test_lib --extra_args="--with-flaky" --cov_args="-p"
         ;;
 
     *)  # catch-all (no-op)
         echo "No tests were executed in this container."
         echo "Please adjust scripts/circle-ci-tests.sh to match your parallelism."
+        exit 1
         ;;
 esac
