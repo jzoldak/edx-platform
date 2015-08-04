@@ -12,8 +12,7 @@ dependencies:
     - npm install
     - bundle install
 
-    - pip install setuptools==0.6c11
-    - pip install distribute==0.6.49
+    - pip install setuptools
     - pip install -r requirements/edx/paver.txt
 
     # Mirror what paver install_prereqs does.
