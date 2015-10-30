@@ -20,7 +20,7 @@ dependencies:
     # cache the virtualenv at that state, so that
     # the next build will not need to install them
     # from scratch again.
-    - pip install --exists-action w -r requirements/edx/pre.txt 
+    - pip install --exists-action w -r requirements/edx/pre.txt
     - pip install --exists-action w -r requirements/edx/github.txt
     - pip install --exists-action w -r requirements/edx/local.txt
 
@@ -42,6 +42,7 @@ test:
     # to understand how multiple containers can be used to
     # run subsets of tests in parallel.
     - ./scripts/all-tests.sh:
+        timeout: 1200  # if a command runs this many seconds without output, kill it
         parallel: true
 
   post:
