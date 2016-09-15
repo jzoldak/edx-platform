@@ -49,6 +49,8 @@ class MockEnvironment(tasks.Environment):
         super(MockEnvironment, self).__init__()
         self.dry_run = True
         self.messages = []
+        self.passthrough_options = None
+        # from nose.tools import set_trace; set_trace()
 
     def info(self, message, *args):
         """Capture any messages that have been recorded"""

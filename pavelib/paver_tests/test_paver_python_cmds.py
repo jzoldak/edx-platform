@@ -7,6 +7,7 @@ import unittest
 
 from paver.easy import call_task
 
+import pavelib.tests
 from pavelib.utils.test.suites import SystemTestSuite
 from .utils import PaverTestCase
 
@@ -53,12 +54,12 @@ class TestPaverSystemTestSuiteCmd(unittest.TestCase):
         self.assertEqual(suite.cmd, expected)
 
 
-class TestPaverPythonSuiteCmd(unittest.TestCase):
+class TestPaverTestSystemCmd(PaverTestCase):
     """
     Paver Nose Suite Command test cases
     """
     def setUp(self):
-        super(TestPaverPythonSuiteCmd, self).setUp()
+        super(TestPaverTestSystemCmd, self).setUp()
 
         # Mock the paver @needs decorator
         self._mock_paver_needs = patch.object(pavelib.tests.test_system, 'needs').start()
@@ -68,34 +69,29 @@ class TestPaverPythonSuiteCmd(unittest.TestCase):
         self.addCleanup(self._mock_paver_needs.stop)
 
 
-    def parse_options_string(self, options_string):
-        """
-        Parse a string containing the options for a test run
-        """
-        parameters = options_string.split(" ")
-        suite = "all"
-        if "--system=lms" in parameters:
-            suite = "lms"
-        elif "--system=common" in parameters:
-            suite = "common"
-        coverage = "--coverage" in parameters
-        port = None
-        if "--port=9999" in parameters:
-            port = 9999
-        return {
-            "suite": suite,
-            "coverage": coverage,
-            "port": port,
-        }
+    # def test_test_js_dev(self):
+    #     """
+    #     Test the "test_js_run" task.
+    #     """
+    #     options = {
+    #         "suite": 'lms',
+    #         "coverage": False,
+    #         "port": None,
+    #     }
+    #     self.reset_task_messages()
+    #     call_task("pavelib.js_test.test_js_dev", options=options)
+    #     self.assertEquals(self.task_messages, [])
+
 
     def test_test_system_lms(self):
         """
-        Test the "test_js_run" task.
+        Test the "test_system" task.
         """
-        options_string =
-        options = self.parse_options_string(options_string)
+        options = {
+            'system': 'lms',
+            'cov-args': '',
+        }
         self.reset_task_messages()
-        call_task("pavelib.js_test.test_js_run", options=options)
-        self.verify_messages(options=options, dev_mode=False)
-        self.assertEqual(suite.cmd, expected)
-
+        # from nose.tools import set_trace; set_trace()
+        call_task("pavelib.tests.test_system", options=options)
+        self.assertEquals(self.task_messages, [])

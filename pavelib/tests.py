@@ -19,6 +19,7 @@ except ImportError:
 __test__ = False  # do not collect
 
 
+@PassthroughTask
 @needs(
     'pavelib.prereqs.install_prereqs',
     'pavelib.utils.test.utils.clean_reports_dir',
@@ -55,7 +56,6 @@ __test__ = False  # do not collect
     ),
     ('skip_clean', None, 'deprecated in favor of skip-clean'),
 ], share_with=['pavelib.utils.test.utils.clean_reports_dir'])
-@PassthroughTask
 @timed
 def test_system(options, passthrough_options):
     """

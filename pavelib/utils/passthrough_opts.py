@@ -138,6 +138,7 @@ class PassthroughTask(paver.tasks.Task):
 
     def __call__(self, *args, **kwargs):
         paver.tasks.environment.passthrough_options = self._parser.passthrough_options  # pylint: disable=no-member
+        # from nose.tools import set_trace; set_trace()
         try:
             return super(PassthroughTask, self).__call__(*args, **kwargs)
         finally:
