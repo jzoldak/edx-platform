@@ -21,6 +21,7 @@ class NoseTestSuite(TestSuite):
     """
     def __init__(self, *args, **kwargs):
         super(NoseTestSuite, self).__init__(*args, **kwargs)
+        # from nose.tools import set_trace; set_trace()
         self.failed_only = kwargs.get('failed_only', False)
         self.fail_fast = kwargs.get('fail_fast', False)
         self.run_under_coverage = kwargs.get('with_coverage', True)
@@ -143,7 +144,6 @@ class SystemTestSuite(NoseTestSuite):
 
     @property
     def cmd(self):
-
         cmd = [
             './manage.py', self.root, 'test',
             '--verbosity={}'.format(self.verbosity),
