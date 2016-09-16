@@ -53,8 +53,10 @@ class TestPassthrough(unittest.TestCase):
 
         @PassthroughTask
         def t1(options, passthrough_options):
+            print options
             assert options.foo == '1'
             # assert not hasattr(options, 'bar')
+            # from nose.tools import set_trace; set_trace()
             pass
 
         @PassthroughTask
@@ -67,26 +69,25 @@ class TestPassthrough(unittest.TestCase):
         tasks._process_commands(['foo=1', 't1', 'bar=2', 't2'])
         assert t1.called
         assert t2.called
-        # from nose.tools import set_trace; set_trace()
-        environment.call_task('t1')
 
 
     def test_options_inherited_via_needs(self):
-        @tasks.task
-        @tasks.cmdopts([('foo=', 'f', "Foo!")])
-        def t1(options):
+        @PassthroughTask
+        @tasks.cmdopts([('foo=', 'f', "Foo!"), ('zed=', 'z', "Zee!")])
+        def t1(options, passthrough_options):
             assert options.t1.foo == "1"
 
-        @tasks.task
-        @tasks.needs('t1')
+        @PassthroughTask
+        # @tasks.needs('t1')
         @tasks.cmdopts([('bar=', 'b', "Bar!")])
-        def t2(options):
+        def t2(options, passthrough_options):
             assert options.t2.bar == '2'
 
         environment = _set_environment(t1=t1, t2=t2)
         tasks._process_commands("t2 --foo 1 -b 2".split())
         assert t1.called
         assert t2.called
+        # environment.call_task('t2', options="--foo 1 -b 2")
 
     def test_options_inherited_via_needs_even_from_grandparents(self):
         @tasks.task

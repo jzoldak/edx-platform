@@ -71,11 +71,10 @@ END
 case "$TEST_SUITE" in
 
     "lms-unit")
-        PAVER_ARGS="--with-flaky --processes=-1 --cov-args='--parallel --debug=dataio' -v --with-xunitmp"
         case "$SHARD" in
 
             4)
-                paver test_system -s lms --attr='!shard' $PAVER_ARGS
+                paver test_system -s lms --attr='!shard' --with-flaky --processes=-1 --cov-args='--parallel --debug=dataio' -v --with-xunitmp
                 ;;
             *)
                 # If no shard is specified, rather than running all tests, create an empty xunit file. This is a
