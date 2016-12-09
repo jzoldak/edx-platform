@@ -60,6 +60,9 @@ class Env(object):
     # Directory that videos are served from
     VIDEO_SOURCE_DIR = REPO_ROOT / "test_root" / "data" / "video"
 
+    # Server that we are running tests against
+    TARGET_HOST = os.environ.get('TARGET_HOST', '0.0.0.0')
+
     BOK_CHOY_SERVERS = {
         'lms': {
             'port': 8003,

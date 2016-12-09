@@ -50,7 +50,8 @@ def test_bokchoy(options, passthrough_options):
     validate_firefox = getattr(options, 'validate_firefox_version', using_firefox)
 
     if validate_firefox:
-        check_firefox_version()
+        # check_firefox_version()
+        pass
 
     run_bokchoy(options.test_bokchoy, passthrough_options)
 

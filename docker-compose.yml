@@ -1,0 +1,20 @@
+version: '2'
+services:
+  selenium:
+    image: selenium/standalone-firefox
+    container_name: selenium
+    environment:
+      - DBUS_SESSION_BUS_ADDRESS=/dev/null
+    ports:
+      - "4444:4444"
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - test.env
+    depends_on:
+      - selenium
+    command: /bin/bash
+    volumes:
+      - .:/code

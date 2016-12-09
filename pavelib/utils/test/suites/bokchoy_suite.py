@@ -204,6 +204,7 @@ class BokChoyTestSuite(TestSuite):
         self.imports_dir = kwargs.get('imports_dir', None)
         self.coveragerc = kwargs.get('coveragerc', None)
         self.save_screenshots = kwargs.get('save_screenshots', False)
+        self.target_host = Env.TARGET_HOST
 
     def __enter__(self):
         super(BokChoyTestSuite, self).__enter__()
@@ -217,27 +218,27 @@ class BokChoyTestSuite(TestSuite):
         if not (self.fasttest or self.skip_clean or self.testsonly):
             test_utils.clean_test_files()
 
-        msg = colorize('green', "Checking for mongo, memchache, and mysql...")
-        print msg
-        check_services()
-
         if not self.testsonly:
+            msg = colorize('green', "Checking for mongo, memchache, and mysql...")
+            print msg
+            check_services()
             call_task('prepare_bokchoy_run', options={'log_dir': self.log_dir})  # pylint: disable=no-value-for-parameter
         else:
             # load data in db_fixtures
-            load_bok_choy_data()  # pylint: disable=no-value-for-parameter
+            # load_bok_choy_data()  # pylint: disable=no-value-for-parameter
+            pass
 
         msg = colorize('green', "Confirming servers have started...")
         print msg
-        wait_for_test_servers()
+        wait_for_test_servers(self.target_host)
         try:
             # Create course in order to seed forum data underneath. This is
             # a workaround for a race condition. The first time a course is created;
             # role permissions are set up for forums.
-            dry(
-                "Installing course fixture for forums",
-                CourseFixture('foobar_org', '1117', 'seed_forum', 'seed_foo').install
-            )
+            # dry(
+            #     "Installing course fixture for forums",
+            #     CourseFixture('foobar_org', '1117', 'seed_forum', 'seed_foo').install
+            # )
             print 'Forums permissions/roles data has been seeded'
         except FixtureError:
             # this means it's already been done

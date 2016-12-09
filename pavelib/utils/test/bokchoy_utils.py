@@ -101,13 +101,13 @@ def wait_for_server(server, port):
     return server_ok
 
 
-def wait_for_test_servers():
+def wait_for_test_servers(target_host):
     """
     Wait until we get a successful response from the servers or time out
     """
 
     for service, info in Env.BOK_CHOY_SERVERS.iteritems():
-        ready = wait_for_server("0.0.0.0", info['port'])
+        ready = wait_for_server(target_host, info['port'])
         if not ready:
             msg = colorize(
                 "red",

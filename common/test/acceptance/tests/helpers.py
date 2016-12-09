@@ -759,7 +759,8 @@ class YouTubeStubConfig(object):
     """
 
     PORT = 9080
-    URL = 'http://127.0.0.1:{}/'.format(PORT)
+    TARGET_HOST = os.environ.get('TARGET_HOST', '127.0.0.1')
+    URL = 'http://{}:{}/'.format(TARGET_HOST, PORT)
 
     @classmethod
     def configure(cls, config):

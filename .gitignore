@@ -83,6 +83,7 @@ django-pyfs
 .prereqs_cache
 .vagrant/
 node_modules
+npm-debug.log
 bin/
 
 ### Static assets pipeline artifacts
